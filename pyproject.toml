@@ -23,6 +23,7 @@ dependencies = [
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+
 [tool.poetry]
 package-mode = false
 
@@ -30,4 +31,25 @@ package-mode = false
 [dependency-groups]
 dev = [
     "pytest (>=9.0.2,<10.0.0)",
+    "ruff (>=0.14.11,<0.15.0)",
+    "mypy (>=1.19.1,<2.0.0)",
 ]
+
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+exclude = ["tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+ignore_missing_imports = true
