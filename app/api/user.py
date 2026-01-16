@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.db.deps import get_db
-from app.schemas.user import UserSignupResponse, UserSignup
+from app.schemas.user import UserSignup, UserSignupResponse
 from app.services.user_service import signup_user
 
 router = APIRouter(prefix="/user", tags=["User"])
