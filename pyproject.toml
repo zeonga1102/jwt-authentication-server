@@ -17,6 +17,9 @@ dependencies = [
     "python-jose (>=3.5.0,<4.0.0)",
     "pydantic-settings (>=2.12.0,<3.0.0)",
     "passlib[bcrypt] (>=1.7.4,<2.0.0)",
+    "pydantic[email] (>=2.12.5,<3.0.0)",
+    "cryptography (>=46.0.3,<47.0.0)",
+    "bcrypt (<4.0)",
 ]
 
 
@@ -54,3 +57,7 @@ known-first-party = ["app"]
 python_version = "3.13"
 strict = true
 ignore_missing_imports = true
+
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
