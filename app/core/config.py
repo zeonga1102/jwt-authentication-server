@@ -1,3 +1,5 @@
+import os
+
 from pydantic import computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -18,9 +20,11 @@ class Settings(BaseSettings):
     REDIS_PORT: int
     REDIS_DB: int
 
+    DEBUG_MODE: bool
+
     model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
+        env_file=f".env.{os.getenv('ENV', 'dev')}",
+        env_file_encoding="utf-8"
     )
 
     @computed_field
