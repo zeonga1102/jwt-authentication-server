@@ -3,14 +3,13 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Response
 from sqlalchemy.orm import Session
 
-from app.db.deps import get_db
-from app.schemas.user import UserSignup, UserSignupResponse, UserLogin, TokenResponse
-from app.services.user_service import signup_user
-from app.services.auth_service import login_user
 from app.core.config import settings
+from app.db.deps import get_db
+from app.schemas.user import TokenResponse, UserLogin, UserSignup, UserSignupResponse
+from app.services.auth_service import login_user
+from app.services.user_service import signup_user
 
 router = APIRouter(prefix="/user", tags=["User"])
-
 
 @router.post("/signup", response_model=UserSignupResponse)
 def signup(

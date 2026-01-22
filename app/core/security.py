@@ -1,5 +1,5 @@
-from datetime import datetime, timedelta
 import uuid
+from datetime import datetime, timedelta
 
 from jose import jwt
 from passlib.context import CryptContext
@@ -8,14 +8,17 @@ from app.core.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
+
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
     로그인 시 입력한 비밀번호와 DB에 저장된 비밀번호 해시 비교
     """
     return pwd_context.verify(plain_password, hashed_password)
+
 
 def create_access_token(subject: str) -> str:
     """
@@ -34,6 +37,7 @@ def create_access_token(subject: str) -> str:
         settings.JWT_SECRET_KEY,
         algorithm=settings.JWT_ALGORITHM
     )
+
 
 def create_refresh_token(subject: str) -> tuple[str, str]:
     """

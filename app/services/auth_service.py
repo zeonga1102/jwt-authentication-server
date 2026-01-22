@@ -1,10 +1,10 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.core.security import verify_password, create_access_token, create_refresh_token
+from app.core.config import settings
+from app.core.security import create_access_token, create_refresh_token, verify_password
 from app.db.redis import redis_client
 from app.repositories.user import get_user_by_email
-from app.core.config import settings
 
 
 def login_user(db: Session, email: str, password: str) -> tuple[str, str]:
