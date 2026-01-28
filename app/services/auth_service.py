@@ -26,7 +26,7 @@ def login_user(db: Session, email: str, password: str) -> tuple[str, str]:
     refresh_token, jti = create_refresh_token(subject=str(user.id))
 
     # Refresh Token 저장
-    # key: refresh:{user_id}
+    # key: refresh:{user_id}:{jti}
     redis_client.set(
         name=f"refresh:{user.id}:{jti}",
         value="valid",
