@@ -21,7 +21,7 @@ def test_로그인_성공(client, db, monkeypatch):
     )
 
     response = client.post(
-        "/user/login",
+        "/auth/login",
         json={
             "email": email,
             "password": password
@@ -49,7 +49,7 @@ def test_잘못된_비밀번호로_로그인_실패(client, db):
     db.commit()
 
     response = client.post(
-        "/user/login",
+        "/auth/login",
         json={
             "email": email,
             "password": "wrong-password"
@@ -61,7 +61,7 @@ def test_잘못된_비밀번호로_로그인_실패(client, db):
 
 def test_존재하지_않는_사용자로_로그인_실패(client):
     response = client.post(
-        "/user/login",
+        "/auth/login",
         json={
             "email": "nope@example.com",
             "password": "password"
