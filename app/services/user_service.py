@@ -12,6 +12,12 @@ def signup_user(
     password: str,
     name: str
 ) -> User:
+    """
+    회원가입
+    1. 이메일 중복 확인
+    2. 비밀번호 해싱
+    3. DB에 저장
+    """
     if get_user_by_email(db, email):
         raise HTTPException(status_code=400, detail="Email already exists")
 
