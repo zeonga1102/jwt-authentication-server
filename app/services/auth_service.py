@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from jose import JWTError, jwt
 
 from app.core.config import settings
 from app.core.security import create_access_token, create_refresh_token, verify_password
@@ -34,3 +35,51 @@ def login_user(db: Session, email: str, password: str) -> tuple[str, str]:
     )
 
     return access_token, refresh_token
+
+
+def refresh_tokens(refresh_token: str) -> tuple[str, str]:
+    """
+    Refresh Token Rotation 처리
+    1. refresh token 검증
+    2. Redis에서 jti 확인 (재사용 공격 감지)
+    3. 기존 jti 삭제
+    4. 새 access / refresh 발급
+    """
+    try:
+        payload = jwt.decode(
+            refresh_token,
+            settings.JWT_SECRET_KEY,
+            algorithms=[settings.JWT_ALGORITHM]
+        )
+        user_id: str = payload.get("sub")
+        jti: str = payload.get("jti")
+
+        if not user_id or not jti:
+            raise HTTPException(status_code=401, detail="Invalid refresh token")
+
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+
+    redis_key = f"refresh:{user_id}:{jti}"
+
+    # 재사용 공격 감지
+    if not redis_client.exists(redis_key):
+        # TODO: 재사용 공격 대응 로직 구현
+        # - 해당 유저의 모든 refresh 토큰 제거
+        # - 강제 로그아웃 처리
+        raise HTTPException(status_code=401, detail="Refresh token reuse detected")
+
+    # Rotation: 기존 refresh token 삭제
+    redis_client.delete(redis_key)
+
+    # 새 토큰 발급
+    new_access_token = create_access_token(subject=user_id)
+    new_refresh_token, new_jti = create_refresh_token(subject=user_id)
+
+    redis_client.set(
+        name=f"refresh:{user_id}:{new_jti}",
+        value="valid",
+        ex=60 * 60 * 24 * settings.REFRESH_TOKEN_EXPIRE_DAYS
+    )
+
+    return new_access_token, new_refresh_token
