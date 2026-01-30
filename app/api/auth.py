@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Response, Request, HTTPException
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
+from app.api.utils.cookies import set_refresh_token_cookie
 from app.db.deps import get_db
 from app.schemas.user import TokenResponse, UserLogin
 from app.services.auth_service import login_user, refresh_tokens
@@ -18,15 +18,7 @@ def login(
 ):
     access_token, refresh_token = login_user(db, data.email, data.password)
 
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        httponly=True,          # JS 접근 불가
-        secure=not settings.DEBUG_MODE,  # HTTPS에서만 전송
-        samesite="lax",         # CSRF 완화
-        max_age=60 * 60 * 24 * 7,  # 7일
-        path="/"
-    )
+    set_refresh_token_cookie(response, refresh_token)
 
     return { "access_token": access_token }
 
@@ -46,14 +38,6 @@ def refresh(
 
     access_token, new_refresh_token = refresh_tokens(refresh_token)
 
-    response.set_cookie(
-        key="refresh_token",
-        value=new_refresh_token,
-        httponly=True,        # JS 접근 불가
-        secure=not settings.DEBUG_MODE, # HTTPS에서만 전송
-        samesite="lax",       # CSRF 완화
-        max_age=60 * 60 * 24 * settings.REFRESH_TOKEN_EXPIRE_DAYS,
-        path="/"
-    )
+    set_refresh_token_cookie(response, new_refresh_token)
 
     return TokenResponse(access_token=access_token)
