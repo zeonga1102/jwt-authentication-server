@@ -1,6 +1,6 @@
 from fastapi import HTTPException
-from sqlalchemy.orm import Session
 from jose import JWTError, jwt
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.security import create_access_token, create_refresh_token, verify_password
@@ -58,7 +58,7 @@ def refresh_tokens(refresh_token: str) -> tuple[str, str]:
             raise HTTPException(status_code=401, detail="Invalid refresh token")
 
     except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid refresh token")
+        raise HTTPException(status_code=401, detail="Invalid refresh token") from None
 
     redis_key = f"refresh:{user_id}:{jti}"
 
