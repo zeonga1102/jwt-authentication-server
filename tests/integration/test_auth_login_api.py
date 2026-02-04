@@ -1,6 +1,5 @@
 from app.core.security import hash_password
 from app.models.user import User
-from unittest.mock import MagicMock
 
 def test_로그인_성공(client, db, monkeypatch):
     password = "password"
@@ -14,10 +13,9 @@ def test_로그인_성공(client, db, monkeypatch):
     db.commit()
     db.refresh(user)
 
-    mock_redis = MagicMock()
     monkeypatch.setattr(
-        "app.services.auth_service.redis_client",
-        mock_redis
+        "app.services.auth_service.save_refresh_jti",
+        lambda user_id, jti: None
     )
 
     response = client.post(

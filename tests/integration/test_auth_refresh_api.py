@@ -1,17 +1,20 @@
-from unittest.mock import MagicMock
-
 from app.core.security import create_refresh_token
 
 def test_refresh_token_재발급_성공(client, monkeypatch):
     user_id = "1"
     refresh_token, jti = create_refresh_token(user_id)
 
-    mock_redis = MagicMock()
-    mock_redis.exists.return_value = True
-
     monkeypatch.setattr(
-        "app.services.auth_service.redis_client",
-        mock_redis
+        "app.services.auth_service.exists_refresh_jti",
+        lambda user_id, jti: True
+    )
+    monkeypatch.setattr(
+        "app.services.auth_service.delete_refresh_jti",
+        lambda user_id, jti: None
+    )
+    monkeypatch.setattr(
+        "app.services.auth_service.save_refresh_jti",
+        lambda user_id, jti: None
     )
 
     client.cookies.set(
