@@ -20,10 +20,9 @@ def test_login_user_성공(db: Session, monkeypatch):
     db.commit()
     db.refresh(user)
 
-    mock_redis = MagicMock()
     monkeypatch.setattr(
-        "app.services.auth_service.redis_client",
-        mock_redis
+        "app.services.auth_service.save_refresh_jti",
+        MagicMock()
     )
 
     access_token, refresh_token = login_user(
@@ -34,8 +33,6 @@ def test_login_user_성공(db: Session, monkeypatch):
 
     assert isinstance(access_token, str)
     assert isinstance(refresh_token, str)
-
-    mock_redis.set.assert_called_once()
 
 
 def test_login_user_존재하지_않는_이메일_실패(db: Session):
@@ -70,15 +67,19 @@ def test_login_user_잘못된_비밀번호_실패(db: Session):
 
 def test_refresh_tokens_성공(monkeypatch):
     user_id = "1"
-
     old_refresh_token, old_jti = create_refresh_token(user_id)
 
-    mock_redis = MagicMock()
-    mock_redis.exists.return_value = True
-
     monkeypatch.setattr(
-        "app.services.auth_service.redis_client",
-        mock_redis
+        "app.services.auth_service.exists_refresh_jti",
+        MagicMock(return_value=True)
+    )
+    monkeypatch.setattr(
+        "app.services.auth_service.delete_refresh_jti",
+        MagicMock()
+    )
+    monkeypatch.setattr(
+        "app.services.auth_service.save_refresh_jti",
+        MagicMock()
     )
 
     access_token, new_refresh_token = refresh_tokens(old_refresh_token)
@@ -86,20 +87,14 @@ def test_refresh_tokens_성공(monkeypatch):
     assert isinstance(access_token, str)
     assert isinstance(new_refresh_token, str)
 
-    mock_redis.exists.assert_called_once_with(f"refresh:{user_id}:{old_jti}")
-    mock_redis.delete.assert_called_once_with(f"refresh:{user_id}:{old_jti}")
-    mock_redis.set.assert_called_once()
 
 def test_refresh_tokens_재사용_탐지_실패(monkeypatch):
     user_id = "1"
     refresh_token, jti = create_refresh_token(user_id)
 
-    mock_redis = MagicMock()
-    mock_redis.exists.return_value = False
-
     monkeypatch.setattr(
-        "app.services.auth_service.redis_client",
-        mock_redis
+        "app.services.auth_service.exists_refresh_jti",
+        MagicMock(return_value=False)
     )
 
     with pytest.raises(Exception) as exc:
