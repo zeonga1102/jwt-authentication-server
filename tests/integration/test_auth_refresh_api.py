@@ -6,14 +6,18 @@ def test_refresh_token_재발급_성공(client, monkeypatch):
 
     monkeypatch.setattr(
         "app.services.auth_service.exists_refresh_jti",
-        lambda user_id, jti: True
+        lambda user_id: True
     )
     monkeypatch.setattr(
-        "app.services.auth_service.delete_refresh_jti",
+        "app.services.auth_service.delete_all_refresh_tokens",
+        lambda user_id: None
+    )
+    monkeypatch.setattr(
+        "app.services.auth_service.delete_refresh_token",
         lambda user_id, jti: None
     )
     monkeypatch.setattr(
-        "app.services.auth_service.save_refresh_jti",
+        "app.services.auth_service.save_refresh_token",
         lambda user_id, jti: None
     )
 
