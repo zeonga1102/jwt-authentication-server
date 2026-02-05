@@ -5,9 +5,10 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.security import create_access_token, create_refresh_token, verify_password
 from app.db.redis.refresh_token import (
-    delete_refresh_jti,
+    delete_all_refresh_tokens,
+    delete_refresh_token,
     exists_refresh_jti,
-    save_refresh_jti,
+    save_refresh_token,
 )
 from app.repositories.user import get_user_by_email
 
@@ -30,7 +31,7 @@ def login_user(db: Session, email: str, password: str) -> tuple[str, str]:
     access_token = create_access_token(subject=str(user.id))
     refresh_token, jti = create_refresh_token(subject=str(user.id))
 
-    save_refresh_jti(str(user.id), jti)
+    save_refresh_token(str(user.id), jti)
 
     return access_token, refresh_token
 
@@ -59,18 +60,16 @@ def refresh_tokens(refresh_token: str) -> tuple[str, str]:
         raise HTTPException(status_code=401, detail="Invalid refresh token") from None
 
     # 재사용 공격 감지
-    if not exists_refresh_jti(user_id, jti):
-        # TODO: 재사용 공격 대응 로직 구현
-        # - 해당 유저의 모든 refresh 토큰 제거
-        # - 강제 로그아웃 처리
+    if not exists_refresh_jti(jti):
+        delete_all_refresh_tokens(user_id)
         raise HTTPException(status_code=401, detail="Refresh token reuse detected")
 
-    delete_refresh_jti(user_id, jti)
+    delete_refresh_token(user_id, jti)
 
     # 새 토큰 발급
     new_access_token = create_access_token(subject=user_id)
     new_refresh_token, new_jti = create_refresh_token(subject=user_id)
 
-    save_refresh_jti(user_id, new_jti)
+    save_refresh_token(user_id, new_jti)
 
     return new_access_token, new_refresh_token
