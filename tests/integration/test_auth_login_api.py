@@ -14,7 +14,7 @@ def test_로그인_성공(client, db, monkeypatch):
     db.refresh(user)
 
     monkeypatch.setattr(
-        "app.services.auth_service.save_refresh_jti",
+        "app.services.auth_service.save_refresh_token",
         lambda user_id, jti: None
     )
 
