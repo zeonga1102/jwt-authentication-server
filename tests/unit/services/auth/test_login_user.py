@@ -21,15 +21,17 @@ def test_login_user_성공(db: Session, monkeypatch):
     db.commit()
     db.refresh(user)
 
+    mock = MagicMock()
     monkeypatch.setattr(
         "app.services.auth_service.save_refresh_token",
-        MagicMock()
+        mock
     )
 
     access_token, refresh_token = login_user(db, email, password)
 
     assert isinstance(access_token, str)
     assert isinstance(refresh_token, str)
+    mock.assert_called_once()
 
 
 def test_login_user_존재하지_않는_이메일_실패(db: Session):
@@ -37,6 +39,7 @@ def test_login_user_존재하지_않는_이메일_실패(db: Session):
         login_user(db, "nope@example.com", "password")
 
     assert exc.value.status_code == 401
+    assert exc.value.detail == "Invalid credentials"
 
 
 def test_login_user_잘못된_비밀번호_실패(db: Session):
@@ -53,3 +56,4 @@ def test_login_user_잘못된_비밀번호_실패(db: Session):
         login_user(db, email, "wrong-password")
 
     assert exc.value.status_code == 401
+    assert exc.value.detail == "Invalid credentials"
