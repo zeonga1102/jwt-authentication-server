@@ -74,3 +74,13 @@ def test_refresh_tokens_유효하지_않은_토큰_실패():
 
     assert exc.value.status_code == 401
     assert exc.value.detail == "Invalid refresh token"
+
+
+def test_refresh_tokens_access_token_사용_실패():
+    access_token = create_access_token("1")
+
+    with pytest.raises(HTTPException) as exc:
+        refresh_tokens(access_token)
+
+    assert exc.value.status_code == 401
+    assert exc.value.detail == "Invalid refresh token"
