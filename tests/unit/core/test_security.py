@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from jose import jwt
 
 from app.core.config import settings
@@ -24,7 +26,7 @@ def test_verify_password_fail():
 def test_create_access_token():
     user_id = "1"
 
-    token = create_access_token(subject=user_id)
+    token = create_access_token(user_id)
 
     payload = jwt.decode(
         token,
@@ -36,11 +38,16 @@ def test_create_access_token():
     assert payload["type"] == "access"
     assert "exp" in payload
 
+    exp = datetime.fromtimestamp(payload["exp"])
+    now = datetime.now()
+
+    assert exp > now
+
 
 def test_create_refresh_token():
     user_id = "1"
 
-    token, jti = create_refresh_token(subject=user_id)
+    token, jti = create_refresh_token(user_id)
 
     assert isinstance(jti, str)
     assert len(jti) > 0

@@ -2,7 +2,7 @@ from app.core.security import create_refresh_token
 
 def test_refresh_token_재발급_성공(client, monkeypatch):
     user_id = "1"
-    refresh_token, jti = create_refresh_token(user_id)
+    refresh_token, _ = create_refresh_token(user_id)
 
     monkeypatch.setattr(
         "app.services.auth_service.exists_refresh_jti",

@@ -1,27 +1,41 @@
-def test_회원가입_성공(client):
+from app.models.user import User
+
+
+def test_회원가입_성공(client, db):
+    email = "test@example.com"
+    name = "tester"
+
     response = client.post(
         "/user/signup",
         json={
-            "email": "test@example.com",
+            "email": email,
             "password": "password123",
-            "name": "tester"
+            "name": name
         }
     )
 
     assert response.status_code == 200
     data = response.json()
 
-    assert data["email"] == "test@example.com"
-    assert data["name"] == "tester"
+    assert data["email"] == email
+    assert data["name"] == name
+    assert "password" not in data
     assert "id" in data
+
+    user = db.query(User).filter(User.email == email).first()
+    assert user is not None
+    assert user.name == name
+    assert user.email == email
 
 
 def test_중복된_이메일로_회원가입(client):
+    email = "test@example.com"
+    
     # 첫 번째 가입
     client.post(
         "/user/signup",
         json={
-            "email": "test@example.com",
+            "email": email,
             "password": "password123",
             "name": "tester"
         }
@@ -31,7 +45,7 @@ def test_중복된_이메일로_회원가입(client):
     response = client.post(
         "/user/signup",
         json={
-            "email": "test@example.com",
+            "email": email,
             "password": "password123",
             "name": "tester2"
         }
