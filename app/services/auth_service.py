@@ -50,10 +50,11 @@ def refresh_tokens(refresh_token: str) -> tuple[str, str]:
             settings.JWT_SECRET_KEY,
             algorithms=[settings.JWT_ALGORITHM]
         )
-        user_id: str = payload.get("sub")
-        jti: str = payload.get("jti")
+        user_id = payload.get("sub")
+        jti = payload.get("jti")
+        token_type = payload.get("type")
 
-        if not user_id or not jti:
+        if not user_id or not jti or token_type != "refresh":
             raise HTTPException(status_code=401, detail="Invalid refresh token")
 
     except JWTError:
