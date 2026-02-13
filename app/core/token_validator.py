@@ -18,13 +18,13 @@ def decode_and_validate_token(token: str, expected_type: str) -> dict:
             algorithms=[settings.JWT_ALGORITHM]
         )
     except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token") from None
+        raise HTTPException(status_code=401, detail=f"Invalid {expected_type} token") from None
 
     token_type = payload.get("type")
     user_id = payload.get("sub")
     jti = payload.get("jti")
 
     if token_type != expected_type or not user_id or not jti:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=401, detail=f"Invalid {expected_type} token")
 
     return payload
