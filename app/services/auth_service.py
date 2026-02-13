@@ -1,8 +1,6 @@
 from fastapi import HTTPException, logger
-from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
 from app.core.security import create_access_token, create_refresh_token, verify_password
 from app.core.token_validator import decode_and_validate_token
 from app.db.redis.refresh_token import (
@@ -46,21 +44,9 @@ def refresh_tokens(refresh_token: str) -> tuple[str, str]:
     3. 기존 jti 삭제
     4. 새 access / refresh 발급
     """
-    try:
-        payload = jwt.decode(
-            refresh_token,
-            settings.JWT_SECRET_KEY,
-            algorithms=[settings.JWT_ALGORITHM]
-        )
-        user_id = payload.get("sub")
-        jti = payload.get("jti")
-        token_type = payload.get("type")
-
-        if not user_id or not jti or token_type != "refresh":
-            raise HTTPException(status_code=401, detail="Invalid refresh token")
-
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid refresh token") from None
+    payload = decode_and_validate_token(refresh_token, "refresh")
+    user_id = payload.get("sub")
+    jti = payload.get("jti")
 
     # 재사용 공격 감지
     if not exists_refresh_jti(jti):
