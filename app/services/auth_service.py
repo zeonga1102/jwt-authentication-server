@@ -28,8 +28,8 @@ def login_user(db: Session, email: str, password: str) -> tuple[str, str]:
     if not verify_password(password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    access_token = create_access_token(subject=str(user.id))
-    refresh_token, jti = create_refresh_token(subject=str(user.id))
+    access_token = create_access_token(str(user.id))
+    refresh_token, jti = create_refresh_token(str(user.id))
 
     save_refresh_token(str(user.id), jti)
 
@@ -56,8 +56,8 @@ def refresh_tokens(refresh_token: str) -> tuple[str, str]:
     delete_refresh_token(user_id, jti)
 
     # 새 토큰 발급
-    new_access_token = create_access_token(subject=user_id)
-    new_refresh_token, new_jti = create_refresh_token(subject=user_id)
+    new_access_token = create_access_token(user_id)
+    new_refresh_token, new_jti = create_refresh_token(user_id)
 
     save_refresh_token(user_id, new_jti)
 
