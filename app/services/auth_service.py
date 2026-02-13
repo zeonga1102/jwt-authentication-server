@@ -1,15 +1,17 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, logger
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.security import create_access_token, create_refresh_token, verify_password
+from app.core.token_validator import decode_and_validate_token
 from app.db.redis.refresh_token import (
     delete_all_refresh_tokens,
     delete_refresh_token,
     exists_refresh_jti,
     save_refresh_token,
 )
+from app.db.redis.blacklist import add_blacklisted_access_token
 from app.repositories.user import get_user_by_email
 
 
@@ -74,3 +76,30 @@ def refresh_tokens(refresh_token: str) -> tuple[str, str]:
     save_refresh_token(user_id, new_jti)
 
     return new_access_token, new_refresh_token
+
+
+def logout_user(access_token: str | None, refresh_token: str | None) -> None:
+    """
+    완전 로그아웃
+    - refresh token 삭제 (필수)
+    - access token 있으면 블랙리스트 등록
+    """
+    # refresh 검증
+    refresh_payload = decode_and_validate_token(refresh_token, "refresh")
+    user_id = refresh_payload["sub"]
+    jti = refresh_payload["jti"]
+
+    delete_refresh_token(user_id, jti)
+
+    # access 블랙리스트 등록
+    if access_token:
+        try:
+            access_payload = decode_and_validate_token(access_token, "access")
+            access_jti = access_payload["jti"]
+            access_exp = access_payload["exp"]
+
+            add_blacklisted_access_token(access_jti, access_exp)
+        except HTTPException:
+            # access token은 곧 만료되거나 이미 만료된 상태일 수 있으므로 검증 실패 시에도 로그아웃은 성공으로 간주
+            # 다만 로그아웃 시도된 access token이 유효하지 않다는 경고 로그를 남김
+            logger.warning("Invalid access token during logout")
