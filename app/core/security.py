@@ -29,8 +29,10 @@ def create_access_token(subject: str) -> str:
     - subject: user_id
     """
     expire = datetime.now() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    jti = str(uuid.uuid4())
     payload = {
         "sub": subject,
+        "jti": jti,
         "type": "access",
         "exp": expire
     }
