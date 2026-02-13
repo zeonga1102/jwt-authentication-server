@@ -3,13 +3,13 @@ from sqlalchemy.orm import Session
 
 from app.core.security import create_access_token, create_refresh_token, verify_password
 from app.core.token_validator import decode_and_validate_token
+from app.db.redis.blacklist import add_blacklisted_access_token
 from app.db.redis.refresh_token import (
     delete_all_refresh_tokens,
     delete_refresh_token,
     exists_refresh_jti,
     save_refresh_token,
 )
-from app.db.redis.blacklist import add_blacklisted_access_token
 from app.repositories.user import get_user_by_email
 
 

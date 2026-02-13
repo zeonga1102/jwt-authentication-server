@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.api.utils.cookies import delete_refresh_token_cookie, set_refresh_token_cookie
 from app.db.deps import get_db
 from app.schemas.user import TokenResponse, UserLogin
-from app.services.auth_service import login_user, refresh_tokens, logout_user
+from app.services.auth_service import login_user, logout_user, refresh_tokens
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
