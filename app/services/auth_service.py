@@ -1,4 +1,6 @@
-from fastapi import HTTPException, logger
+import logging
+
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.security import create_access_token, create_refresh_token, verify_password
@@ -11,6 +13,8 @@ from app.db.redis.refresh_token import (
     save_refresh_token,
 )
 from app.repositories.user import get_user_by_email
+
+logger = logging.getLogger(__name__)
 
 
 def login_user(db: Session, email: str, password: str) -> tuple[str, str]:
