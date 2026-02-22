@@ -20,3 +20,17 @@ def set_refresh_token_cookie(
         max_age=60 * 60 * 24 * settings.REFRESH_TOKEN_EXPIRE_DAYS,
         path="/"
     )
+
+
+def delete_refresh_token_cookie(response: Response) -> None:
+    """
+    Refresh Token 쿠키 삭제
+    - 로그아웃 시 사용
+    """
+    response.delete_cookie(
+        key="refresh_token",
+        httponly=True,
+        secure=not settings.DEBUG_MODE,
+        samesite="lax",
+        path="/"
+    )
